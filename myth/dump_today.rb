@@ -26,6 +26,8 @@ def generateAndProcess()
   puts d2
   dt2 = d2.strftime("%Y-%m-%d")
 
+# we get everything not just BBC - might be possible to use another 
+# service like TVPixie to resolve non-BBC stuff.
 
   q = "select 
 programid,starttime,endtime, channel.callsign,title,description,subtitle,channum from channelscan_channel,channel, program where 
