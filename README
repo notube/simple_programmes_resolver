@@ -97,36 +97,3 @@ Example of a tag url
 
 curl "http://services.notu.be/resolve?uri\[\]=tag:feeds.bbc.co.uk,2008:PIPS:b00tk8lm"
 
-The setup I have is the following:
-
-* one machine that runs mythtv
-* a different machine on the public internet running a crawler of 
-/programmes and a mini ruby server with mysql
-
-
-The process is this:
-
-1. A crontab on the Myth machine that exports crid, title, start time, 
-channel and channel number for all BBC content, and uploads it to the 
-other machine:
-
-crid://fp.bbc.co.uk/240z2y| |2011-10-26T10:00:00+00:00|2011-10-26T11:00:00+00:00||BBC ONE|Homes Under the Hammer|1|
-
-20 5 * * * cd myth_data; ruby dump_today.rb; scp 
-data/latest_data.txt tvdata@ec2-79-125-58-203.eu-west-1.compute.amazonaws.com:latest_data.txt;
-
-
-2. A later crontab on the server that deletes the old data, loads the 
-myth data into a database and initiates the /programmes crawler, 
-inserting the data in the same database for all BBC content:
-
-25 6 * * * cd tvdata; mysql -u user -ppass epgs < insertdata.sql
-30 6 * * * cd crawler; ruby crawler.rb
-
-3. A little server that joins up the two datasets. You can run it like this:
-
-mkdir WEBrickLog
-ruby server.rb &
-
-
-
