@@ -1,5 +1,7 @@
    require 'epg.rb'
+   require 'resolve.rb'
    require 'EPGServlet'
+   require 'ResolverServlet'
    require 'date'
    require 'webrick'
    require 'webrick/accesslog'
@@ -119,6 +121,7 @@
    end
 
    server.mount("/epg", EPGServlet, {:FancyIndexing=>true})
+   server.mount("/resolve", ResolverServlet, {:FancyIndexing=>true})
 
    # handle signals
    %w(INT).each do |signal|
