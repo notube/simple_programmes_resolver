@@ -1,6 +1,6 @@
 Resolve a crid
 
-http://services.notu.be/resolver
+example: http://services.notu.be/resolver
 
 See Project Baird (spec: 
 http://projectbaird.com/specs/draft-mcroberts-uri-resolver.html) for an 
