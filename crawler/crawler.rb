@@ -64,17 +64,28 @@
 
 
    def get_urls_to_retrieve(d1)
-              urls = {}
+       urls_all = {}
 
-              if (d1==nil || d1 =="")
+       if (d1==nil || d1 =="")
                  t = DateTime.now
-                 d = t.strftime("%Y/%m/%d")
-              else
-                 d = d1
-              end
-              pt1 = "http://www.bbc.co.uk/"
-              pt2 = "/programmes/schedules/"
+                 dd = t.strftime("%Y/%m/%d")
+       else
+                 dd = d1
+       end
+       pt1 = "http://www.bbc.co.uk/"
+       pt2 = "/programmes/schedules/"
 
+       dx1 = (t+1).strftime("%Y/%m/%d")
+       dx2 = (t+2).strftime("%Y/%m/%d")
+       dx3 = (t+3).strftime("%Y/%m/%d")
+       dx4 = (t+4).strftime("%Y/%m/%d")
+       dx5 = (t+5).strftime("%Y/%m/%d")
+       dx6 = (t+6).strftime("%Y/%m/%d")
+
+       dts = [dd,dx1,dx2,dx3,dx4,dx5,dx6]
+
+       dts.each do |d|
+              urls = {}
               channel = "bbcone"
               url = "#{pt1}#{channel}#{pt2}london/#{d}.json"
               urls[channel]=url
@@ -154,8 +165,9 @@
               channel =  "worldservice"
               url = "#{pt1}#{channel}#{pt2}#{d}.json"
               urls[channel]=url
-
-              return urls
+              urls_all[d]=urls
+        end
+        return urls_all
    end
 
    def get_single_url(url)
@@ -201,7 +213,7 @@
               begin    
                 res2 = Net::HTTP.new(u.host, u.port).start {|http|http.request(req) }
                 data = res2.body
-                puts data #...
+                ##puts data #...
               rescue Timeout::Error=>e
                 puts "uri error #{e}"
               end
@@ -271,6 +283,7 @@
        "parliament"=>"BBC Parliament",
        "6music"=>"BBC 6 Music",
        "radio1"=>"BBC Radio 1",
+       "1xtra"=>"BBC R1X",
        "bbcnews"=>"BBC NEWS",
        "5live"=>"BBC R5L",
        "radio2"=>"BBC Radio 2",
@@ -319,12 +332,12 @@
 # utility methods
 
    def generatePidCacheFN(pid,fmt)
-      return "/mnt/www/discovery/2009/10/bbc/cache/#{pid}.#{fmt}"
+      return "/mnt/vol-b956efd1/www/discovery/2009/10/bbc/cache/#{pid}.#{fmt}"
    end
 
 
    def generateChannelCacheFN(channel, dt,fmt)
-      return "/mnt/www/discovery/2009/10/bbc/cache/#{channel}#{dt}.#{fmt}"
+      return "/mnt/vol-b956efd1/www/discovery/2009/10/bbc/cache/#{channel}#{dt}.#{fmt}"
    end
 
    def checkChannelCache(channel, dt,fmt)
@@ -357,29 +370,28 @@
 
      #delete *everything*
      
-     urls =  get_urls_to_retrieve(nil)
-#     urls = {"bbcone","http://www.bbc.co.uk/bbcone/programmes/schedules/london/2011/10/14.json"}
-     #urls = {"1xtra","http://www.bbc.co.uk/1xtra/programmes/schedules/2010/11/10.json"}
-     #urls = {"radio3","http://www.bbc.co.uk/radio3/programmes/schedules/2010/11/10.json"}
+     urls_all =  get_urls_to_retrieve(nil)
 
-     pp urls
+#     pp urls_all
 
 
      arrs = Array.new
      allprogs = Array.new
      t = DateTime.now
      d = t.strftime("%Y-%m-%d")
-#    d = "2010-03-01"
 
 # for each channel json url, get it, stash it, and wait 2 secs before the next one
 # checking the cache as we go
-   
-     urls.each do |channel,u|
-        arr,pids = get_urls(u,channel,d,"json")
-        puts "sleeping 2 #{u} ... #{arr.class}"
-        sleep 2
-        arrs.push(pids)
-        allprogs.push(arr)
+
+     urls_all.each do |dati,urls| 
+       ddd = dati.gsub("/","-")  
+       urls.each do |channel,u|
+          arr,pids = get_urls(u,channel,ddd,"json")
+          puts "sleeping 2 #{u} ... #{arr.class}"
+          sleep 2
+          arrs.push(pids)
+          allprogs.push(arr)
+       end
      end
 
      #insert into database
@@ -393,13 +405,25 @@
          pid = ar["pid"]
          pT = ar["displayTitle"]
          s = ar["startd"]
+         puts "startiing start is #{s}"
+         tt = Time.parse(s)
+         ss = tt.utc
+         sss = ss.strftime('%Y-%m-%d %H:%M')
+
          e = ar["endd"]
+
+         tte = Time.parse(e)
+         ee = tte.utc
+         eee = ee.strftime('%Y-%m-%d %H:%M')
+
+         ssss = "#{sss}:00+00:00"
+         eeee = "#{eee}:00+00:00"
+
          se = ar["service"]
          sT = ar["serviceTitle"]
          sD = ar["DVBServiceName"]
-#         puts "SD #{sD} se #{se} sT #{sT}"
-         puts "insert into pid_data values (#{pid},#{pT},#{s},#{e},#{se},#{sT},#{sD})"
-         sth.execute(pid,pT,s,e,se,sT,sD)
+         puts "insert into pid_data values (#{pid},#{pT},#{ssss},#{eeee},#{se},#{sT},#{sD})"
+         sth.execute(pid,pT,ssss,eeee,se,sT,sD)
        end
      end
      sth.finish
