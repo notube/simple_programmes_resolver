@@ -39,12 +39,18 @@ end
 def on_now(channel)
        arr = []
 
+#       q0="select title,crid,channel,start from todays_epg where 
+#match(channel) against ('+\""+channel+"\"' in boolean mode) and start < 
+#NOW() && end > NOW() order by chan_num;"
+
+
        q0="select distinct todays_epg.title,crid,channel,todays_epg.start,pid 
 from todays_epg left join pid_data on (todays_epg.start = pid_data.start 
 and todays_epg.channel = pid_data.dvb_service_title) where channel like 
 '%#{channel}%' and todays_epg.start < NOW() && todays_epg.end > NOW() 
 order by chan_num;"
 
+#       q0 = "select title,crid,channel,start from todays_epg where channel=? and start < (NOW()) && end > (NOW()) order by chan_num;"
        puts q0
 
        dbh = connect_to_mysql()
@@ -79,6 +85,7 @@ order by chan_num;"
        dbh = connect_to_mysql()
        sth = dbh.prepare(q0)
        sth.execute()
+#       sth.execute(channel)
        pid=""
        sth.fetch do |row|
           pid = row[0]

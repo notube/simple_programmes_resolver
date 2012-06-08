@@ -1,6 +1,7 @@
    require 'webrick'
    require 'webrick/accesslog'
    include WEBrick
+#   require 'epg.rb'
 
    class EPGServlet < HTTPServlet::AbstractServlet
 
@@ -38,7 +39,6 @@
 #best_match_search("news")
 #on_now_search("news")
 #on_now("BBC ONE")
-
          r = []
          if(nn)
            if(q)
@@ -49,6 +49,10 @@
              r = on_now(channel)
            elsif(random)
              puts "on now service"
+#             channels = ["bbcone","bbctwo","bbcthree","bbcnews","bbcredbutton",
+#"bbcfour","cbbc","parliament","5live","5livesportsextra","6music","radio7",
+#"1xtra","asiannetwork","worldservice","radio1","radio2","radio3","radio4"]
+
              channels = ["bbcone","bbctwo","bbcthree","bbcnews",
 "bbcfour","parliament","5live","6music","radio7",
 "asiannetwork","worldservice","radio1","radio2","radio4"]
